@@ -141,8 +141,9 @@ const loginUser=asyncHandler(async (req,res)=>{
 
 })
 
-
+// ############################## logout #################
 const logoutUser=asyncHandler(async(req,res)=>{
+
    await User.findByIdAndUpdate(
                     req.user._id,
                     {
@@ -152,7 +153,7 @@ const logoutUser=asyncHandler(async(req,res)=>{
                     },
                     {new:true}
                     )
-
+   console.log("Log req.user::=>",req.user)
   const options={
    httpOnly:true,
    secure:true

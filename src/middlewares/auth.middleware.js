@@ -13,7 +13,9 @@ const verifyJWT= async(req,res,next)=>{
     
      const decodedToken= jwt.verify(token,process.env.ACCESS_TOKEN_SECRET)
 
-     console.log("Decoded token log :",decodedToken);
+    //  console.log("Decoded token log :",decodedToken);
+    // By console log decodeToken yow will get the object that You have sended during token generation code
+     
 
      const user= await User.findById(decodedToken?._id).select("-password -refreshToken");
      
