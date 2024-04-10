@@ -102,12 +102,17 @@ const loginUser = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
 
   console.log(email);
+  console.log(username);
+  console.log(password);
 
-  if (!(username || password)) {
+  if (!username && !email) {
     throw new ApiError(400, "email or username is req");
   }
 
-  const user = await User.findOne({ $or: [{ username }, { email }] });
+  const user = await User.findOne({
+    $or: [{username}, {email}]
+})
+  console.log(user);
 
   if (!user) {
     throw new ApiError(401, "user does not exist");
@@ -122,7 +127,7 @@ const loginUser = asyncHandler(async (req, res) => {
   const { accessToken, refreshToken } =
     await generateAccessTokenAndRefreshToken(user._id);
 
-  const loggedInUser = await User.findOne(user._id).select(
+  const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
 
@@ -242,7 +247,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 
   user.password = newPassword;
 
-  await save({ validateBeforeSave: false });
+  await user.save({ validateBeforeSave: false });
 
   return res
     .status(200)
@@ -260,7 +265,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 const updateAccountDetails = asyncHandler(async (req, res) => {
   const { email, fullName } = req.body;
 
-  if (!(email || fullName)) {
+  if (!email || !fullName) {
     throw new ApiError(401, "All fields are requuired");
   }
 
@@ -268,8 +273,8 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     req.user?._id,
     {
       $set: {
-        email,
-        fullName,
+        email:email,
+        fullName:fullName,
       },
     },
     { new: true }
@@ -288,12 +293,12 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Avatar file is missing");
   }
 
-  const avatar = await uploadOnCloudinary(avatarLocalFilePath);
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
 
   if (!avatar.url) {
     throw new ApiError(400, "Error while uploading  avatar on cloudinary");
   }
-  const user = await User.findByIdAndDelete(
+  const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
@@ -318,10 +323,10 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
-  if (!coverImage.url) {
+  if (!coverImage?.url) {
     throw new ApiError(400, "Error while uploading  coverImage on cloudinary");
   }
-  const user = await User.findByIdAndDelete(
+  const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
@@ -465,6 +470,8 @@ return res
     )
 )
 });
+
+
 
 export {
   registerUser,
